@@ -25,7 +25,6 @@ case $OPTION in
 	"Veuillez indiquer le nom de votre archive" 10 50 3>&1 1>&2 2>&3 )
 	whiptail --msgbox "Le nom de votre archive sera $NOM_ARCHIVE" 10 30
 	tar -cvf $CHEMIN$NOM_ARCHIVE $REPERTOIRE
-	scripts/./script.sh
 	;;
     2) whiptail --title "Samir's Program" \
 	 --msgbox "Vous avez choisi l'option $OPTION" 10 35 
@@ -43,7 +42,6 @@ case $OPTION in
 	 10 50 3>&1 1>&2 2>&3 )
 	whiptail --msgbox "Le chemin choisi est $CHEMIN_ARCHIVE_COMPRESSEE" 10 35
 	gzip -c $CHEMIN_ARCHIVE$ARCHIVE > $CHEMIN_ARCHIVE_COMPRESSEE$ARCHIVE.gz
-	scripts/./script.sh
 	;;
     3) whiptail --title "Samir's Program" \
 	whiptail --msgbox "Vous avez choisi l'option $OPTION" 10 35 
@@ -60,7 +58,6 @@ case $OPTION in
 	else
             tar -xvf $CHEMIN_ARCHIVE
 	fi
-	scripts/./script.sh
 	;;
     4) whiptail --title "Samir's Program" \
         whiptail --msgbox "Vous avez choisi l'option $OPTION" 10 35
@@ -76,13 +73,38 @@ case $OPTION in
             NOUVEAUNOM=$(whiptail --title "Nom du fichier" \
 	    --inputbox "Veuillez indiquer le nom qui sera donné au fichier" 10 50 \
 	    3>&1 1>&2 2>&3 )
-	    whiptail --msgbox "Nom du fichier : $NOUVEAUNOM"
+	    whiptail --msgbox "Nom du fichier : $NOUVEAUNOM" 10 35
 	    gunzip -c $CHEMIN_ARCHIVE_COMPRESSEE > $CHEMIN_DECOMPRESSION$NOUVEAUNOM
         else
 	    gunzip $CHEMIN_ARCHIVE_COMPRESSEE
 	fi
 	;;
-    5);;
+    5) whiptail --title "Samir's Program" \
+	whiptail --msgbox "Vous avez choisi l'option $OPTION" 10 35
+	CHOICE=$(whiptail --title "Test" --checklist "Choose:" 20 78 15 \
+	"Comparaison de hash (md5sum)" "" on \
+	"Comparaison par ligne de textes (VIM)" "" off \
+        3>&1 1>&2 2>&3 )
+	whiptail --msgbox "Vos choix sont : $CHOICE " 10 35
+	FICHIER1=$(whiptail --title "Choix du 1er fichier à comparer" \
+	--inputbox "Fichier 1" 10 50 \
+	3>&1 1>&2 2>&3 )
+	FICHIER2=$(whiptail --title "Choix du 1er fichier à comparer" \
+	--inputbox "Fichier 2" 10 50 \
+	3>&1 1>&2 2>&3 )
+	if [[ $CHOICE == *"hash"* ]] ; then
+	    FILE1=$(md5sum $FICHIER1 | awk '{print $1}')
+	    FILE2=$(md5sum $FICHIER2 | awk '{print $1}')
+	    if [ $FILE1 == $FILE2 ] ; then
+    		whiptail --msgbox "Ils sont identiques" 10 35
+	    else
+    		whiptail --msgbox "Ils ne sont pas identiques" 10 35
+	    fi
+	fi
+	if [[ $CHOICE == *"VIM"* ]] ; then
+	    vimdiff $FICHIER1 $FICHIER2
+   	fi
+	;;
     6);;
     7);;
     8);;
