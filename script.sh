@@ -79,47 +79,40 @@ case $OPTION in
 	fi
 	exec $0
 	;;
-    5) whiptail --title "Samir's Program" \
-	--msgbox "Vous avez choisi l'option $OPTION" 10 35
-	CHOICE=$(whiptail --title "Comparaison de fichiers" --checklist "Choisissez : " 20 78 15 \
+    5)	CHOICE=$(whiptail --title "Comparaison de fichiers" --checklist "" 0 0 0 \
 	"Comparaison de hash (md5sum)" "" on \
 	"Comparaison par ligne de textes (VIM)" "" off \
         3>&1 1>&2 2>&3 )
-	whiptail --msgbox "Vos choix sont : $CHOICE " 10 35
-	FICHIER1=$(whiptail --title "Choix du 1er fichier à comparer" \
-	--inputbox "Fichier 1" 10 50 \
+	FICHIER1=$(whiptail --title "Fichier1" \
+	--inputbox "Exemple : montar.tar.gz (dossier courant)\n          Documents/montar.tar.gz\n          /home/%USER%/Documents/montar.tar.gz" 0 0 \
 	3>&1 1>&2 2>&3 )
-	FICHIER2=$(whiptail --title "Choix du 1er fichier à comparer" \
-	--inputbox "Fichier 2" 10 50 \
+	FICHIER2=$(whiptail --title "Fichier2" \
+	--inputbox "Exemple : montar.tar.gz (dossier courant)\n          Documents/montar.tar.gz\n          /home/%USER%/Documents/montar.tar.gz" 0 0 \
 	3>&1 1>&2 2>&3 )
 	if [[ $CHOICE == *"hash"* ]] ; then
 	    FILE1=$(md5sum $FICHIER1 | awk '{print $1}')
 	    FILE2=$(md5sum $FICHIER2 | awk '{print $1}')
 	    if [ $FILE1 == $FILE2 ] ; then
-    		whiptail --msgbox "Ils sont identiques" 10 35
+    		whiptail --msgbox "$FICHIER1 et $FICHIER2 sont les mêmes" 0 0
 	    else
-    		whiptail --msgbox "Ils ne sont pas identiques" 10 35
+    		whiptail --msgbox "$FICHIER1 est différent de $FICHIER2" 0 0
 	    fi
 	fi
 	if [[ $CHOICE == *"VIM"* ]] ; then
 	    vimdiff $FICHIER1 $FICHIER2
    	fi
-	;;
-    6) whiptail --title "Samir's Program" \
-	--msgbox "Vous avez choisi l'option $OPTION" 10 35
-	FILE=$(whiptail --title "Choix d'un fichier .csv à mettre en forme" \
-	--inputbox "Fichier : " 10 50 \
-	3>&1 1>&2 2>&3 )
-	whiptail --textbox /dev/stdin 40 80 <<<"$(cat $FILE | column -t -s $',')"
 	exec $0
 	;;
-    7) whiptail --title "Samir's Program" \
-	--msgbox "Vous avez choisi l'option $OPTION" 10 35
-	whiptail --textbox /dev/stdin 30 60 <<<"$(ifconfig)"
+    6) 	FILE=$(whiptail --title "Fichier .csv" \
+	--inputbox "" 0 0 \
+	3>&1 1>&2 2>&3 )
+	whiptail --textbox /dev/stdin 0 0 <<<"$(cat $FILE | column -t -s $',')"
+	exec $0
+	;;
+    7)  whiptail --textbox /dev/stdin 0 0 <<<"$(ifconfig)"
 	exec $0
         ;;
-    8) whiptail --title "Samir's Program" \
-	--msgbox "Vous avez choisi l'option $OPTION" 10 35
+    8)
 #	PASSWORD=$(whiptail --title "Mot de passe sudo" --passwordbox "Enter your password" 8 70 \
 #	3>&1 1>&2 2>&3 )
 #	exitstatus=$?
@@ -135,15 +128,16 @@ case $OPTION in
 	    sleep 0.5
 	    echo $i
 	done
-	} | whiptail --gauge "Network interface is restarting..." 6 50 0 \
+	} | whiptail --gauge "ens33 redémarre..." 0 0 0 \
 	&& sudo ifconfig ens33 up
 	exec $0
         ;;
-    9) whiptail --msgbox "Merci d'avoir utilisé notre programme! \n Samir Benlafya \n Gregory Comble \n 2017" 15 40
+    9) whiptail --msgbox "Merci d'avoir utilisé notre programme!\n           Samir Benlafya\n           Gregory Comble\n                2017" 0 0
 	exit
 	;;
-    *) if (whiptail --yesno "Voulez vous vraiment quitter?"  15 45) then
-	   exit
+    *) if (whiptail --yesno "Voulez vous vraiment quitter?" 0 0) then
+	   whiptail --msgbox "Merci d'avoir utilisé notre programme!\n           Samir Benlafya\n           Gregory Comble\n                2017" 0 0
+           exit
        else
 	   exec $0
        fi
