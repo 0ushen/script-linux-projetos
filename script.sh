@@ -81,7 +81,7 @@ case $OPTION in
 	;;
     5) whiptail --title "Samir's Program" \
 	whiptail --msgbox "Vous avez choisi l'option $OPTION" 10 35
-	CHOICE=$(whiptail --title "Test" --checklist "Choose:" 20 78 15 \
+	CHOICE=$(whiptail --title "Comparaison de fichiers" --checklist "Choisissez : " 20 78 15 \
 	"Comparaison de hash (md5sum)" "" on \
 	"Comparaison par ligne de textes (VIM)" "" off \
         3>&1 1>&2 2>&3 )
@@ -105,7 +105,13 @@ case $OPTION in
 	    vimdiff $FICHIER1 $FICHIER2
    	fi
 	;;
-    6);;
+    6) whiptail --title "Samir's Program" \
+	whiptail --msgbox "Vous avez choisi l'option $OPTION" 10 35
+	FILE=$(whiptail --title "Choix d'un fichier .csv à mettre en forme" \
+	--inputbox "Fichier : " 10 50 \
+	3>&1 1>&2 2>&3 )
+	cat $FILE | column -t -s $','
+	;;
     7);;
     8);;
     9);;
