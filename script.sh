@@ -24,9 +24,24 @@ OPTION=$(whiptail --title "Projet scripting linux" --menu "" 0 0 10 \
 case $OPTION in
     1)  REPERTOIRE=$(whiptail --title "Choix d'un repertoire à archiver" --inputbox "Exemple : repertoire/" 0 0 \
 	3>&1 1>&2 2>&3 )
+	while [ ! -d $REPERTOIRE ]; do
+	    whiptail --msgbox "Erreur! Le repertoire $REPERTOIRE n'existe pas. Veuillez recommencer." 0 0 
+	    REPERTOIRE=$(whiptail --title "Choix d'un repertoire à archiver" --inputbox "Exemple : repertoire/" 0 0 \
+	    3>&1 1>&2 2>&3 )
+	done
+
 	CHEMIN=$(whiptail --title "Choix du dossier ou placer l'archive" \
 	--inputbox "*!*Ne rien faire si vous voulez placer l'archive dans le dossier courant*!*\nExemple : Documents/" 0 0 \
 	3>&1 1>&2 2>&3 )
+	if [ ! -z $CHEMIN ]; then
+	    while [ ! -d $CHEMIN ]; do
+		whiptail --msgbox "Erreur! Le repertoire $CHEMIN n'existe pas. Veuillez recommencer." 0 0
+		CHEMIN=$(whiptail --title "Choix du dossier ou placer l'archive" \
+		--inputbox "*!*Ne rien faire si vous voulez placer l'archive dans le dossier courant*!*\nExemple : Documents/" 0 0 \
+		3>&1 1>&2 2>&3 )
+	    done
+	fi
+
         NOM_ARCHIVE=$(whiptail --title "Nom d'archive" --inputbox \
 	"*!*Pas besoin de préciser le type de fichier*!*" 0 0 \
 	3>&1 1>&2 2>&3 )
@@ -35,32 +50,79 @@ case $OPTION in
 	else
 	    whiptail --msgbox "Le repertoire $REPERTOIRE sera archivé dans le dossier courant sous le nom $NOM_ARCHIVE.tar" 0 0
 	fi
+
 	tar -cvf $CHEMIN$NOM_ARCHIVE.tar $REPERTOIRE
+
 	exec $0
 	;;
+
     2) 	CHEMIN_ARCHIVE=$(whiptail --title "Dossier dans lequel se trouve l'archive" \
-	--inputbox "*!*Ne rien faire si vous voulez placer l'archive compressée dans le dossier courant*!*\nExemple : Documents/ ou /home/%USER%/Documents/" 0 0 \
+	--inputbox "*!*Ne rien faire si l'archive se trouve dans le dossier courant*!*\nExemple : Documents/ ou /home/%USER%/Documents/" 0 0 \
 	3>&1 1>&2 2>&3 )
-        ARCHIVE=$(whiptail --title "Nom de l'archive" \
+	if [ ! -z $CHEMIN_ARCHIVE ]; then
+	    while [ ! -d $CHEMIN_ARCHIVE ]; do
+		whiptail --msgbox "Erreur le repertoire $CHEMIN_ARCHIVE n'existe pas. Veuillez recommencer." 0 0
+		CHEMIN_ARCHIVE=$(whiptail --title "Dossier dans lequel se trouve l'archive" \
+		--inputbox "*!*Ne rien faire si vous voulez placer l'archive compressée dans le dossier courant*!*\nExemple : Documents/ ou /home/%USER%/Documents/" 0 0 \
+		3>&1 1>&2 2>&3 )
+	    done
+	fi
+
+	ARCHIVE=$(whiptail --title "Nom de l'archive" \
 	--inputbox "*!*Précisez le type*!*\nExemple : montar.tar" 0 0 \
 	3>&1 1>&2 2>&3 )
+	while [ ! -f $CHEMIN_ARCHIVE$ARCHIVE ]; do
+	    whiptail --msgbox "Erreur! Le fichier $CHEMIN_ARCHIVE$ARCHIVE n'existe pas. Veuillez recommencer." 0 0
+	    ARCHIVE=$(whiptail --title "Nom de l'archive" \
+	    --inputbox "*!*Précisez le type*!*\nExemple : montar.tar" 0 0 \
+	    3>&1 1>&2 2>&3 )
+	done
+
 	CHEMIN_ARCHIVE_COMPRESSEE=$(whiptail \
 	--title "Choix du dossier dans lequel sera placé l'archive compressée" \
 	--inputbox "*!*Ne rien faire si vous voulez placer l'archive compressée dans le dossier courant*!*\nExemple : Musique/ ou /home/%USER%/Musique/" 0 0 \
 	3>&1 1>&2 2>&3 )
-	if [[ $CHEMIN_ARCHIVE_COMPRESSEE == *"/"* ]] ; then
+	if [ ! -z $CHEMIN_ARCHIVE_COMPRESSEE ]; then
+	    while [ ! -d $CHEMIN_ARCHIVE_COMPRESSEE ]; do
+		whiptail --msgbox "Erreur! Le repertoire $CHEMIN_ARCHIVE_COMPRESSEE n'existe pas. Veuillez recommencer." 0 0
+		CHEMIN_ARCHIVE_COMPRESSEE=$(whiptail \
+		--title "Choix du dossier dans lequel sera placé l'archive compressée" \
+		--inputbox "*!*Ne rien faire si vous voulez placer l'archive compressée dans le dossier courant*!*\nExemple : Musique/ ou /home/%USER%/Musique/" 0 0 \
+		3>&1 1>&2 2>&3 )
+	    done
+	fi
+
+	if [[ $CHEMIN_ARCHIVE_COMPRESSEE == *"/"* ]]; then
 	    whiptail --msgbox "L'archive $CHEMIN_ARCHIVE$ARCHIVE sera compressée et \nplacée dans le dossier $CHEMIN_ARCHIVE_COMPRESSEE ." 0 0    
 	else
 	    whiptail --msgbox "L'archive $CHEMIN_ARCHIVE$ARCHIVE sera compressée et \nplacée dans le dossier courant ." 0 0
-	fi 
+	fi
+ 
 	gzip -c $CHEMIN_ARCHIVE$ARCHIVE > $CHEMIN_ARCHIVE_COMPRESSEE$ARCHIVE.gz
 	;;
+
     3)  CHEMIN_ARCHIVE=$(whiptail --title "Choix de l'archive a extraire" \
 	--inputbox "Exemple : montar.tar (dossier courant)\n          Documents/montar.tar\n          /home/%USER%/Documents/montar.tar" 0 0 \
 	3>&1 1>&2 2>&3 )
+	while [ ! -f $CHEMIN_ARCHIVE ]; do
+	    whiptail --msgbox "Erreur! Le fichier $CHEMIN_ARCHIVE n'existe pas. Veuillez recommencer." 0 0
+	    CHEMIN_ARCHIVE=$(whiptail --title "Choix de l'archive a extraire" \
+	    --inputbox "Exemple : montar.tar (dossier courant)\n          Documents/montar.tar\n          /home/%USER%/Documents/montar.tar" 0 0 \
+	    3>&1 1>&2 2>&3 )
+	done
+
 	CHEMIN_EXTRACTION_ARCHIVE=$(whiptail --title "Extraire vers : " \
 	--inputbox "*!*Ne rien faire si vous voulez extraire vers le dossier courant*!*\nExemple : Documents/ ou /home/%USER%/Documents/" 0 0 \
 	3>&1 1>&2 2>&3 )
+	if [ ! -z $CHEMIN_EXTRACTION_ARCHIVE ]; then
+	    while [ ! -d $CHEMIN_EXTRACTION_ARCHIVE ]; do
+		whiptail --msgbox "Erreur! Le repertoire $CHEMIN_EXTRACTION_ARCHIVE n'existe pas. Veuillez recommencer." 0 0
+		CHEMIN_EXTRACTION_ARCHIVE=$(whiptail --title "Extraire vers : " \
+		--inputbox "*!*Ne rien faire si vous voulez extraire vers le dossier courant*!*\nExemple : Documents/ ou /home/%USER%/Documents/" 0 0 \
+		3>&1 1>&2 2>&3 )
+	    done
+	fi
+
 	if [[ $CHEMIN_EXTRACTION_ARCHIVE == *"/"* ]] ; then
 	    whiptail --msgbox "Le contenu de $CHEMIN_ARCHIVE sera placé dans : $CHEMIN_EXTRACTION_ARCHIVE" 0 0
 	    tar -xvf $CHEMIN_ARCHIVE -C $CHEMIN_EXTRACTION_ARCHIVE
@@ -68,14 +130,32 @@ case $OPTION in
 	    whiptail --msgbox "Le contenu de $CHEMIN_ARCHIVE sera placé dans le dossier courant" 0 0
             tar -xvf $CHEMIN_ARCHIVE
 	fi
+
 	exec $0
 	;;
+
     4) 	CHEMIN_ARCHIVE_COMPRESSEE=$(whiptail --title "Choix de l'archive à décompresser" \
 	--inputbox "Exemple : montar.tar.gz (dossier courant)\n          Documents/montar.tar.gz\n          /home/%USER%/Documents/montar.tar.gz" 0 0 \
 	3>&1 1>&2 2>&3 )
+	while [ ! -f $CHEMIN_ARCHIVE_COMPRESSEE ]; do
+	    whiptail --msgbox "Erreur! Le fichier $CHEMIN_ARCHIVE_COMPRESSEE n'existe pas. Veuillez recommencer." 0 0
+	    CHEMIN_ARCHIVE_COMPRESSEE=$(whiptail --title "Choix de l'archive à décompresser" \
+	    --inputbox "Exemple : montar.tar.gz (dossier courant)\n          Documents/montar.tar.gz\n          /home/%USER%/Documents/montar.tar.gz" 0 0 \
+	    3>&1 1>&2 2>&3 )
+	done
+
         CHEMIN_DECOMPRESSION=$(whiptail --title "Décompresser vers : " \
         --inputbox "*!*Ne rien faire si vous voulez décompresser dans le dossier d'origine*!*\nExemple : Documents/ ou /home/%USER%/Documents/" 0 0 \
         3>&1 1>&2 2>&3 )
+	if [ ! -z $CHEMIN_DECOMPRESSION ]; then
+	    while [ ! -d $CHEMIN_DECOMPRESSION ]; do
+		whiptail --msgbox "Erreur! Le repertoire $CHEMIN_DECOMPRESSION n'existe pas. Veuillez recommencer." 0 0
+		CHEMIN_DECOMPRESSION=$(whiptail --title "Décompresser vers : " \
+        	--inputbox "*!*Ne rien faire si vous voulez décompresser dans le dossier d'origine*!*\nExemple : Documents/ ou /home/%USER%/Documents/" 0 0 \
+        	3>&1 1>&2 2>&3 )
+	    done
+	fi
+
         if [[ $CHEMIN_DECOMPRESSION == *"/"* ]] ; then
             NOUVEAUNOM=$(whiptail --title "Nom du fichier resultant : " \
 	    --inputbox "Exemple : resultat.tar" 0 0 \
@@ -86,18 +166,39 @@ case $OPTION in
 	    whiptail --msgbox "$CHEMIN_ARCHIVE_COMPRESSEE sera décompressé et placé dans le dossier d'origine." 0 0
             gunzip $CHEMIN_ARCHIVE_COMPRESSEE
 	fi
+
 	exec $0
 	;;
+
     5)	CHOICE=$(whiptail --title "Comparaison de fichiers" --checklist "" 0 0 0 \
 	"Comparaison de hash (md5sum)" "" on \
 	"Comparaison par ligne de textes (VIM)" "" off \
         3>&1 1>&2 2>&3 )
+
 	FICHIER1=$(whiptail --title "Fichier1" \
-	--inputbox "Exemple : montar.tar.gz (dossier courant)\n          Documents/montar.tar.gz\n          /home/%USER%/Documents/montar.tar.gz" 0 0 \
+	--inputbox "Exemple : monfichier.csv (dossier courant)\n          Documents/monfichier.csv\n          /home/%USER%/Documents/monfichier.csv" 0 0 \
 	3>&1 1>&2 2>&3 )
+	if [ ! -z $FICHIER1 ]; then
+	    while [ ! -f $FICHIER1 ]; do
+		whiptail --msgbox "Erreur! Le fichier $FICHIER1 n'existe pas. Veuillez recommencer" 0 0
+		FICHIER1=$(whiptail --title "Fichier1" \
+		--inputbox "Exemple : monfichier.csv (dossier courant)\n          Documents/monfichier.csv\n          /home/%USER%/Documents/monfichier.csv" 0 0 \
+		3>&1 1>&2 2>&3 )
+	    done
+	fi
+
 	FICHIER2=$(whiptail --title "Fichier2" \
-	--inputbox "Exemple : montar.tar.gz (dossier courant)\n          Documents/montar.tar.gz\n          /home/%USER%/Documents/montar.tar.gz" 0 0 \
+	--inputbox "Exemple : monfichier.csv (dossier courant)\n          Documents/monfichier.csv\n          /home/%USER%/Documents/monfichier.csv" 0 0 \
 	3>&1 1>&2 2>&3 )
+	if [ ! -z $FICHIER2 ]; then
+	    while [ ! -f $FICHIER2 ]; do
+		whiptail --msgbox "Erreur! Le fichier $FICHIER2 n'existe pas. Veuillez recommencer." 0 0
+		FICHIER2=$(whiptail --title "Fichier2" \
+		--inputbox "Exemple : monfichier.csv (dossier courant)\n          Documents/monfichier.csv\n          /home/%USER%/Documents/monfichier.csv" 0 0 \
+		3>&1 1>&2 2>&3 )
+	    done
+	fi
+
 	if [[ $CHOICE == *"hash"* ]] ; then
 	    FILE1=$(md5sum $FICHIER1 | awk '{print $1}')
 	    FILE2=$(md5sum $FICHIER2 | awk '{print $1}')
@@ -107,20 +208,36 @@ case $OPTION in
     		whiptail --msgbox "$FICHIER1 est différent de $FICHIER2" 0 0
 	    fi
 	fi
+
 	if [[ $CHOICE == *"VIM"* ]] ; then
 	    vimdiff $FICHIER1 $FICHIER2
    	fi
+
 	exec $0
 	;;
-    6) 	FILE=$(whiptail --title "Fichier .csv" \
-	--inputbox "" 0 0 \
+
+    6) 	FICHIER=$(whiptail --title "Fichier .csv" \
+	--inputbox "Exemple : monfichier.csv (dossier courant)\n          Documents/monfichier.csv\n          /home/%USER%/Documents/monfichier.csv" 0 0 \
 	3>&1 1>&2 2>&3 )
-	whiptail --textbox /dev/stdin 0 0 <<<"$(cat $FILE | column -t -s $',')"
+	if [ ! -z $FICHIER ]; then
+	    while [ ! -f $FICHIER ]; do
+		whiptail --msgbox "Erreur! Le fichier $FICHIER n'existe pas. Veuillez recommencer" 0 0
+		FICHIER=$(whiptail --title "Fichier.csv" \
+		--inputbox "Exemple : monfichier.csv (dossier courant)\n          Documents/monfichier.csv\n          /home/%USER%/Documents/monfichier.csv" 0 0 \
+		3>&1 1>&2 2>&3 )
+	    done
+	fi
+
+	whiptail --textbox /dev/stdin 0 0 <<<"$(cat $FICHIER | column -t -s $',')"
+
 	exec $0
 	;;
+
     7)  whiptail --textbox /dev/stdin 0 0 <<<"$(ifconfig)"
+
 	exec $0
         ;;
+
     8)
 #	PASSWORD=$(whiptail --title "Mot de passe sudo" --passwordbox "Enter your password" 8 70 \
 #	3>&1 1>&2 2>&3 )
@@ -141,14 +258,16 @@ case $OPTION in
 	&& sudo ifconfig ens33 up
 	exec $0
         ;;
-    9) whiptail --msgbox "Merci d'avoir utilisé notre programme!\n           Samir Benlafya\n           Gregory Comble\n                2017" 0 0
+
+    9)  whiptail --msgbox "Merci d'avoir utilisé notre programme!\n           Samir Benlafya\n           Gregory Comble\n                2017" 0 0
 	exit
 	;;
-    *) if (whiptail --yesno "Voulez vous vraiment quitter?" 0 0) then
-	   whiptail --msgbox "Merci d'avoir utilisé notre programme!\n           Samir Benlafya\n           Gregory Comble\n                2017" 0 0
-           exit
-       else
-	   exec $0
-       fi
-       ;;
+
+    *)  if (whiptail --yesno "Voulez vous vraiment quitter?" 0 0) then
+	    whiptail --msgbox "Merci d'avoir utilisé notre programme!\n           Samir Benlafya\n           Gregory Comble\n                2017" 0 0
+            exit
+	else
+	    exec $0
+	fi
+	;;
 esac
