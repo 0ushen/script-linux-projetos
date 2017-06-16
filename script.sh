@@ -3,7 +3,6 @@ clear
 
 # A faire : -adapter le code sur 80 lignes max
 #           -demander le mot de passe sudo via whiptail (8)
-#           -vérifier si les fichiers existent (1 2 3 4 5 6)
 #           -
 #
 
